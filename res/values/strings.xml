@@ -3,6 +3,15 @@
 
     <string name="app_name">UnidataAndroid</string>
     <string name="action_settings">Settings</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="welcome">Welcome!</string>
+    <string name="main_product_type">Choose a product type:</string>
+    <string name="main_product">Choose a product:</string>
+    <string name="main_location">Location of interest:</string>
+    <string name="main_variables">Variables to display:</string>
+    <string name="main_submit">SUBMIT</string>
+    <string name="location_lat">LAT:</string>
+    <string name="location_lon">LON:</string>
+    <string name="product_type_ncep">NCEP Model Data</string>
+    <string name="product_ncep_gfs_conus_80km">GFS CONUS 80km</string>
 
 </resources>
