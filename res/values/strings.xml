@@ -13,5 +13,7 @@
     <string name="location_lon">LON:</string>
     <string name="product_type_ncep">NCEP Model Data</string>
     <string name="product_ncep_gfs_conus_80km">GFS CONUS 80km</string>
+    <string name="main_time_start">Starting Time:</string>
+    <string name="main_time_end">Ending Time:</string>
 
 </resources>
