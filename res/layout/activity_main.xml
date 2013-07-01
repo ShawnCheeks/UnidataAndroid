@@ -80,6 +80,30 @@
             </LinearLayout>
         </LinearLayout>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal" >
+
+            <Button
+                android:id="@+id/button_location_current"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="1"
+                android:onClick="showMyLocation"
+                android:text="@string/location_current" />
+
+            <Button
+                android:id="@+id/button_location_show"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:onClick="showEnteredLocation"
+                android:text="@string/location_show" />
+
+        </LinearLayout>
+
     </LinearLayout>
 
     <ScrollView
@@ -165,36 +189,22 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical" >
 
-                <CheckBox
-                    android:id="@+id/checkBox1"
-                    android:layout_width="wrap_content"
+                <GridView
+                    android:id="@+id/gridview_variables"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="CheckBox" />
+                    android:choiceMode="multipleChoice"
+                    android:clickable="true"
+                    android:numColumns="auto_fit" >
 
-                <CheckBox
-                    android:id="@+id/checkBox2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="CheckBox" />
+                </GridView>
 
-                <CheckBox
-                    android:id="@+id/checkBox3"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="CheckBox" />
-
-                <CheckBox
-                    android:id="@+id/checkBox4"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="CheckBox" />
             </LinearLayout>
 
             <Button
                 android:id="@+id/button_submit"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:onClick="showMyLocation"
                 android:text="@string/main_submit" />
 
         </LinearLayout>
