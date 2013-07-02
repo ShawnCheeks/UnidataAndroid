@@ -201,9 +201,9 @@ containing a value of this type.
         public static final int edittext_time_end=0x7f05001a;
         public static final int edittext_time_start=0x7f050018;
         public static final int fragment_map=0x7f05000c;
-        public static final int gridView1=0x7f050006;
         public static final int gridview_variables=0x7f05001c;
         public static final int hybrid=0x7f050004;
+        public static final int listView1=0x7f050006;
         public static final int none=0x7f050000;
         public static final int normal=0x7f050001;
         public static final int parent=0x7f050008;

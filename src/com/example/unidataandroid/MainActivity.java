@@ -23,6 +23,7 @@ import com.google.android.gms.maps.model.PolygonOptions;
 import android.location.Location;
 import android.os.Bundle;
 import android.content.Context;
+import android.content.Intent;
 import android.support.v4.app.FragmentActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -299,6 +300,12 @@ implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, On
 		mapMainLocation.animateCamera(CameraUpdateFactory.newLatLngZoom(loc,(float) 9));
 	}
 
+	public void callDisplayActivity(View view)
+	{
+		Intent i = new Intent(this, DisplayActivity.class);
+		startActivity(i);
+	}
+	
 	/*
 	 * from here down is borrowed from the Google Maps API sample code
 	 */
