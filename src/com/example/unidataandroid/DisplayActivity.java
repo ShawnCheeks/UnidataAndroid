@@ -19,8 +19,10 @@ import android.graphics.Color;
 import android.graphics.Paint.Align;
 import android.view.Menu;
 import android.view.View;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 
 public class DisplayActivity extends Activity {
@@ -73,21 +75,18 @@ public class DisplayActivity extends Activity {
 	    XYMultipleSeriesDataset dataset = buildDataset(titles, x, values);
 	    XYSeries series = dataset.getSeriesAt(0);
 	    series.addAnnotation("Vacation", 6, 30);
-	    ArrayList<GraphicalView> test = new ArrayList<GraphicalView>();
-	    test.add(ChartFactory.getLineChartView(this, dataset, renderer));
-//	    Intent intent = ChartFactory.getLineChartIntent(this, dataset, renderer,
-//	        "Average temperature");
-//	    startActivity(intent);
 	    
-//	    GraphicalView test1 = ChartFactory.getLineChartView(this, mDataset, mRenderer);
-//	    Bitmap bitmapTest = test1.toBitmap();
-//	    ArrayList<View> childrenForAccessibility = new ArrayList<View>();
-//	    childrenForAccessibility.add(test2);
+//	    ArrayList<LinearLayout> test = new ArrayList<LinearLayout>();
+//	    LinearLayout something = new LinearLayout(this);
+//	    something.addView(ChartFactory.getLineChartView(this, dataset, renderer), new LayoutParams(LayoutParams.FILL_PARENT,
+//	            LayoutParams.FILL_PARENT));
 	    
-	    chartAdapter = new ArrayAdapter<GraphicalView>(this, android.R.layout.activity_list_item, test);
-//	    chartAdapter.add(test2);
-	    lvCharts.setAdapter(chartAdapter);
-//	    lvCharts.addChildrenForAccessibility(childrenForAccessibility);
+//	    chartAdapter = new ArrayAdapter<LinearLayout>(this, R.layout.chart_row, test);
+//	    lvCharts.setAdapter(chartAdapter);
+	    
+	    LinearLayout layingOut = (LinearLayout)findViewById(R.id.LinearLayingOut);
+	    layingOut.addView(ChartFactory.getLineChartView(this, dataset, renderer), new LayoutParams(LayoutParams.WRAP_CONTENT,
+	            LayoutParams.WRAP_CONTENT));
 	}
 
 	@Override
