@@ -8,42 +8,57 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".DisplayActivity" >
 
-    <ScrollView
-        android:id="@+id/scrollView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true" >
+        android:layout_alignParentTop="true"
+        android:orientation="vertical" >
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical" >
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
 
-            <ListView
-                android:id="@+id/listView1"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" >
-            </ListView>
-
-            <LinearLayout
-                android:id="@+id/LinearLayingOut"
-                android:layout_width="match_parent"
+            <EditText
+                android:id="@+id/xValue"
+                android:layout_width="100dp"
                 android:layout_height="wrap_content"
-                android:orientation="vertical" >
+                android:layout_weight="1"
+                android:ems="10"
+                android:inputType="numberDecimal" >
 
-            </LinearLayout>
+                <requestFocus />
+            </EditText>
 
+            <EditText
+                android:id="@+id/yValue"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ems="10"
+                android:inputType="numberDecimal" />
+
+            <Button
+                android:id="@+id/add"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Add" />
         </LinearLayout>
-    </ScrollView>
 
-    <Button
-        android:id="@+id/button1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:text="Button" />
+        <LinearLayout
+            android:id="@+id/chart"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.00"
+            android:orientation="vertical" >
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/new_series"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="New Series" />
+    </LinearLayout>
 
 </RelativeLayout>
