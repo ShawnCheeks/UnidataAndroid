@@ -6,6 +6,7 @@ import org.achartengine.chart.PointStyle;
 import org.achartengine.model.SeriesSelection;
 import org.achartengine.model.XYMultipleSeriesDataset;
 import org.achartengine.model.XYSeries;
+import org.achartengine.renderer.DefaultRenderer;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
 import org.achartengine.renderer.XYSeriesRenderer;
 
@@ -32,12 +33,6 @@ public class DisplayActivity extends Activity {
 	  private XYSeriesRenderer mCurrentRenderer;
 	  /** Button for creating a new series of data. */
 	  private Button mNewSeries;
-	  /** Button for adding entered data to the current series. */
-	  private Button mAdd;
-	  /** Edit text field for entering the X value of the data to be added. */
-	  private EditText mX;
-	  /** Edit text field for entering the Y value of the data to be added. */
-	  private EditText mY;
 	  /** The chart view that displays the data. */
 	  private GraphicalView mChartView;
 
@@ -67,11 +62,6 @@ public class DisplayActivity extends Activity {
 	    super.onCreate(savedInstanceState);
 	    setContentView(R.layout.activity_display);
 
-	    // the top part of the UI components for adding new data points
-	    mX = (EditText) findViewById(R.id.xValue);
-	    mY = (EditText) findViewById(R.id.yValue);
-	    mAdd = (Button) findViewById(R.id.add);
-
 	    // set some properties on the main renderer
 	    mRenderer.setApplyBackgroundColor(true);
 	    mRenderer.setBackgroundColor(Color.argb(255, 0, 0, 0));
@@ -84,56 +74,31 @@ public class DisplayActivity extends Activity {
 	    mRenderer.setPointSize(15);
 	    mRenderer.setShowGrid(true);
 	    mRenderer.setGridColor(Color.argb(255,255,255,255));
-
-	    // the button that handles the new series of data creation
-	    mNewSeries = (Button) findViewById(R.id.new_series);
-	    mNewSeries.setOnClickListener(new View.OnClickListener() {
-	      public void onClick(View v) {
-	        String seriesTitle = "Series " + (mDataset.getSeriesCount() + 1);
-	        // create a new series of data
-	        XYSeries series = new XYSeries(seriesTitle);
-	        mDataset.addSeries(series);
-	        mCurrentSeries = series;
-	        // create a new renderer for the new series
-	        XYSeriesRenderer renderer = new XYSeriesRenderer();
-	        mRenderer.addSeriesRenderer(renderer);
-	        // set some renderer properties
-	        renderer.setPointStyle(PointStyle.CIRCLE);
-	        renderer.setFillPoints(true);
-	        renderer.setDisplayChartValues(true);
-	        renderer.setDisplayChartValuesDistance(10);
-	        renderer.setColor(Color.argb(255, 255, 255, 0));
-	        mCurrentRenderer = renderer;
-	        setSeriesWidgetsEnabled(true);
-	        mChartView.repaint();
-	      }
-	    });
-
-	    mAdd.setOnClickListener(new View.OnClickListener() {
-	      public void onClick(View v) {
-	        double x = 0;
-	        double y = 0;
-	        try {
-	          x = Double.parseDouble(mX.getText().toString());
-	        } catch (NumberFormatException e) {
-	          mX.requestFocus();
-	          return;
-	        }
-	        try {
-	          y = Double.parseDouble(mY.getText().toString());
-	        } catch (NumberFormatException e) {
-	          mY.requestFocus();
-	          return;
-	        }
-	        // add a new data point to the current series
-	        mCurrentSeries.add(x, y);
-	        mX.setText("");
-	        mY.setText("");
-	        mX.requestFocus();
-	        // repaint the chart such as the newly added point to be visible
-	        mChartView.repaint();
-	      }
-	    });
+	    mRenderer.setZoomRate((float) .8);
+	    
+	    String seriesTitle = "Temperature";
+        // create a new series of data
+        XYSeries series = new XYSeries(seriesTitle);
+        mDataset.addSeries(series);
+        mCurrentSeries = series;
+        // create a new renderer for the new series
+        XYSeriesRenderer renderer = new XYSeriesRenderer();
+        mRenderer.addSeriesRenderer(renderer);
+        // set some renderer properties
+        renderer.setPointStyle(PointStyle.CIRCLE);
+        renderer.setFillPoints(true);
+        renderer.setDisplayChartValues(true);
+        renderer.setDisplayChartValuesDistance(10);
+        renderer.setColor(Color.argb(255, 255, 255, 0));
+        mCurrentRenderer = renderer;
+        
+        double[] xs = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23};
+        double[] ys = {83,84,85,86,86,85,83,81,78,76,73,71,70,68,67,66,65,64,65,69,73,78,83,86};
+        
+        for(int i=0; i < xs.length; i++)
+        {
+        	mCurrentSeries.add(xs[i], ys[i]);
+        }
 	  }
 
 	  @Override
@@ -145,40 +110,10 @@ public class DisplayActivity extends Activity {
 	      // enable the chart click events
 	      mRenderer.setClickEnabled(true);
 	      mRenderer.setSelectableBuffer(10);
-	      mChartView.setOnClickListener(new View.OnClickListener() {
-	        public void onClick(View v) {
-	          // handle the click event on the chart
-	          SeriesSelection seriesSelection = mChartView.getCurrentSeriesAndPoint();
-	          if (seriesSelection == null) {
-	            Toast.makeText(DisplayActivity.this, "No chart element", Toast.LENGTH_SHORT).show();
-	          } else {
-	            // display information of the clicked point
-	            Toast.makeText(
-	                DisplayActivity.this,
-	                "Chart element in series index " + seriesSelection.getSeriesIndex()
-	                    + " data point index " + seriesSelection.getPointIndex() + " was clicked"
-	                    + " closest point value X=" + seriesSelection.getXValue() + ", Y="
-	                    + seriesSelection.getValue(), Toast.LENGTH_SHORT).show();
-	          }
-	        }
-	      });
 	      layout.addView(mChartView, new LayoutParams(LayoutParams.FILL_PARENT,
 	          LayoutParams.FILL_PARENT));
-	      boolean enabled = mDataset.getSeriesCount() > 0;
-	      setSeriesWidgetsEnabled(enabled);
 	    } else {
 	      mChartView.repaint();
 	    }
-	  }
-
-	  /**
-	   * Enable or disable the add data to series widgets
-	   * 
-	   * @param enabled the enabled state
-	   */
-	  private void setSeriesWidgetsEnabled(boolean enabled) {
-	    mX.setEnabled(enabled);
-	    mY.setEnabled(enabled);
-	    mAdd.setEnabled(enabled);
 	  }
 }
