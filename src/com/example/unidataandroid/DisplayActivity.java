@@ -2,7 +2,18 @@ package com.example.unidataandroid;
 
 import java.io.IOException;
 import java.io.InputStream;
+<<<<<<< HEAD
+<<<<<<< HEAD
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+=======
 import java.util.ArrayList;
+>>>>>>> e442202e2da2e3018f1f7526d551ffb7353dde39
+=======
+import java.util.ArrayList;
+>>>>>>> e442202e2da2e3018f1f7526d551ffb7353dde39
 import java.util.List;
 
 import org.achartengine.ChartFactory;
@@ -14,17 +25,39 @@ import org.achartengine.model.XYSeries;
 import org.achartengine.renderer.DefaultRenderer;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
 import org.achartengine.renderer.XYSeriesRenderer;
+<<<<<<< HEAD
+<<<<<<< HEAD
+import org.xmlpull.v1.XmlPullParserException;
+
+import com.example.unidataandroid.XMLParser.Entry;
+=======
+=======
+>>>>>>> e442202e2da2e3018f1f7526d551ffb7353dde39
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
+<<<<<<< HEAD
+>>>>>>> e442202e2da2e3018f1f7526d551ffb7353dde39
+=======
+>>>>>>> e442202e2da2e3018f1f7526d551ffb7353dde39
 
 import android.app.Activity;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
+<<<<<<< HEAD
+<<<<<<< HEAD
+import android.text.format.DateFormat;
+=======
 import android.util.Log;
 import android.util.Xml;
+>>>>>>> e442202e2da2e3018f1f7526d551ffb7353dde39
+=======
+import android.util.Log;
+import android.util.Xml;
+>>>>>>> e442202e2da2e3018f1f7526d551ffb7353dde39
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
@@ -47,6 +80,13 @@ public class DisplayActivity extends Activity {
 	  private Button mNewSeries;
 	  /** The chart view that displays the data. */
 	  private GraphicalView mChartView;
+<<<<<<< HEAD
+<<<<<<< HEAD
+	  /** The URL holding the NCSS Data */
+	  private String URL = "";
+=======
+=======
+>>>>>>> e442202e2da2e3018f1f7526d551ffb7353dde39
 	  
 	  static final String URL = "http://api.androidhive.info/pizza/?format=xml";
 	    // XML node keys
@@ -54,6 +94,10 @@ public class DisplayActivity extends Activity {
 	    static final String KEY_NAME = "name";
 	    static final String KEY_COST = "cost";
 	    static final String KEY_DESC = "description";
+<<<<<<< HEAD
+>>>>>>> e442202e2da2e3018f1f7526d551ffb7353dde39
+=======
+>>>>>>> e442202e2da2e3018f1f7526d551ffb7353dde39
 
 	  @Override
 	  protected void onSaveInstanceState(Bundle outState) {
@@ -81,6 +125,14 @@ public class DisplayActivity extends Activity {
 	    super.onCreate(savedInstanceState);
 	    setContentView(R.layout.activity_display);
 	    
+<<<<<<< HEAD
+<<<<<<< HEAD
+	    URL = "http://thredds.ucar.edu/thredds/ncss/grid/grib/NCEP/GFS/CONUS_80km/best?var=Temperature_height_above_ground&latitude=40&longitude=-105&time_start=2013-07-08T00%3A00%3A00Z&time_end=2013-07-10T00%3A00%3A00Z&vertCoord=&accept=xml";
+	    loadPage();
+
+=======
+=======
+>>>>>>> e442202e2da2e3018f1f7526d551ffb7353dde39
 	 // All static variables
 	    	     
 	    XMLParser parser = new XMLParser();
@@ -98,6 +150,10 @@ public class DisplayActivity extends Activity {
 			System.out.println(name + " " + cost + " " + description);
 	    }
 	    
+<<<<<<< HEAD
+>>>>>>> e442202e2da2e3018f1f7526d551ffb7353dde39
+=======
+>>>>>>> e442202e2da2e3018f1f7526d551ffb7353dde39
 	    // set some properties on the main renderer
 	    mRenderer.setApplyBackgroundColor(true);
 	    mRenderer.setBackgroundColor(Color.argb(255, 0, 0, 0));
@@ -151,5 +207,63 @@ public class DisplayActivity extends Activity {
 	    } else {
 	      mChartView.repaint();
 	    }
+	  }
+	  
+	  public void loadPage() {
+		  new DownloadXmlTask().execute(URL);
+	  }
+	  
+	  private class DownloadXmlTask extends AsyncTask<String, Void, String> {
+		  @Override
+		  protected String doInBackground(String... urls) {
+			  try {
+				  return loadXmlFromNetwork(urls[0]);
+			  } catch(IOException e) {
+				  return e.getMessage();
+			  } catch(XmlPullParserException e) {
+				  return e.getMessage();
+			  }			  
+		  }
+		  
+		  @Override
+		  protected void onPostExecute(String result) {
+		  }
+	  }
+	  
+	  private String loadXmlFromNetwork(String urlString) throws XmlPullParserException, IOException {
+		  InputStream stream = null;
+		  //instantiate the parser
+		  XMLParser xmlParser = new XMLParser();
+		  List<Entry> entries = null;
+		  
+		  try {
+			  stream = downloadUrl(urlString);
+			  entries = xmlParser.parse(stream);
+			  
+			  //Makes sure that the InputStream is closed after the app is finished using it
+		  } finally {
+			  if (stream != null) {
+				  stream.close();
+			  }
+		  }
+		  
+		  for(Entry entry : entries)
+		  {
+			  System.out.println(entry.variable);
+		  }
+		  
+		  return entries.toString();
+	  }
+	  
+	  private InputStream downloadUrl(String urlString) throws IOException {
+		  URL url = new URL(urlString);
+		  HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+		  conn.setReadTimeout(10000 /* milliseconds */);
+		  conn.setConnectTimeout(15000 /* milliseconds */);
+		  conn.setRequestMethod("GET");
+		  conn.setDoInput(true);
+		  //Start the query
+		  conn.connect();
+		  return conn.getInputStream();
 	  }
 }
