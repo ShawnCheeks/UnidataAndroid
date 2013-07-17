@@ -37,5 +37,6 @@
 
     <string name="title_activity_display">DisplayActivity</string>
     <string name="hello_world">Hello world!</string>
+    <string name="title_activity_unidata_super">UnidataSuperActivity</string>
 
 </resources>

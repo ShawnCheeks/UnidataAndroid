@@ -193,7 +193,7 @@
                     android:id="@+id/gridview_variables"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:choiceMode="multipleChoice"
+                    android:choiceMode="singleChoice"
                     android:clickable="true"
                     android:numColumns="auto_fit" >
 

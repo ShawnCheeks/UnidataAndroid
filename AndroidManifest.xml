@@ -47,6 +47,10 @@
             android:name="com.example.unidataandroid.DisplayActivity"
             android:label="@string/title_activity_display" >
         </activity>
+        <activity
+            android:name="com.example.unidataandroid.UnidataSuperActivity"
+            android:label="@string/title_activity_unidata_super" >
+        </activity>
     </application>
 
 </manifest>

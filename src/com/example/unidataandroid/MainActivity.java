@@ -1,10 +1,21 @@
 package com.example.unidataandroid;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
+
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks;
@@ -21,6 +32,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolygonOptions;
 
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.content.Context;
 import android.content.Intent;
@@ -43,7 +55,7 @@ import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-public class MainActivity extends FragmentActivity
+public class MainActivity extends UnidataSuperActivity
 implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, OnTouchListener{
 	
 	//declare the widgets
@@ -62,7 +74,6 @@ implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, On
 					 etMainLon,
 					 etMainTimeStart,
 					 etMainTimeEnd;
-//	private CheckBox[] cbs = new CheckBox[4];
 	private GridView gvVariables;
 	private Button bMainSubmit;
 	
@@ -201,10 +212,6 @@ implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, On
 		etMainLon       = (EditText)findViewById(R.id.edittext_lon);
 		etMainTimeStart = (EditText)findViewById(R.id.edittext_time_start);
 		etMainTimeEnd   = (EditText)findViewById(R.id.edittext_time_end);
-//		cbs[0] = (CheckBox)findViewById(R.id.checkBox1);
-//		cbs[1] = (CheckBox)findViewById(R.id.checkBox2);
-//		cbs[2] = (CheckBox)findViewById(R.id.checkBox3);
-//		cbs[3] = (CheckBox)findViewById(R.id.checkBox4);
 		gvVariables = (GridView)findViewById(R.id.gridview_variables);
 		bMainSubmit = (Button)findViewById(R.id.button_location_show);
 		//map requires special setup
@@ -239,6 +246,9 @@ implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, On
 	{
 		if(product.equals("GFS CONUS 80km"))
 		{
+			UnidataSuperActivity.setModelURL("http://thredds.ucar.edu/thredds/ncss/grid/grib/NCEP/GFS/CONUS_80km/best/dataset.xml");
+			new MyTask().execute();
+			Variable[] modelVariables = extractVariables(); 
 			variableAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_multiple_choice, getResources().getStringArray(R.array.variables_gfs_conus_80km));
 			productSelected = true;
 		}
@@ -381,5 +391,112 @@ implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, On
 	@Override
 	public void onConnectionFailed(ConnectionResult result) {
 	  // Do nothing
+	}
+	
+	public Variable[] extractVariables()
+	{
+		while(!UnidataSuperActivity.getDone()){}
+		
+		ArrayList<Variable> variables = new ArrayList<Variable>();
+		
+		String modelXml = super.getXML();
+	    try
+	    {
+	    	XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+	    	factory.setNamespaceAware(false);
+	        XmlPullParser xpp = factory.newPullParser();
+
+	        xpp.setInput(new StringReader (modelXml));
+	        int eventType = xpp.getEventType();
+	        while (eventType != XmlPullParser.END_DOCUMENT) {
+	            if(eventType == XmlPullParser.START_TAG) {
+	            	if(xpp.getName().equals("grid"))	{
+	            		if(xpp.getAttributeValue(null, "shape") != null && xpp.getAttributeValue(null, "shape").equals("time y x")){
+	            			System.out.println(xpp.getAttributeValue(null, "name") + "\n" + xpp.getAttributeValue(null, "desc"));
+	            			boolean keepGoing = true;
+	            			xpp.nextTag();
+	            			while(xpp.getDepth()==4 && keepGoing)
+	            			{
+	            				if(xpp.getAttributeValue(null, "name").equals("units"))
+	            				{
+	            					System.out.println(xpp.getAttributeValue(null, "value"));
+	            					keepGoing = false;
+	            				} else {
+	            					xpp.nextTag();
+	            				}	            				
+	            			}
+	            		}
+	            	}
+//	            	if(xpp.getAttributeValue(null, "name") != null && xpp.getAttributeValue(null, "name").equals("date")){
+//	            		eventType = xpp.nextToken();
+//	            		xpp.getText();
+//	            		times.add(xpp.getText());
+//	            	} else if(xpp.getAttributeValue(null, "units")!=null && xpp.getAttributeValue(null, "units").equals("K")){
+//	            		if(units.equals(""))
+//	            			units = xpp.getAttributeValue(null, "units");
+//	            		eventType = xpp.nextToken();
+//	            		xpp.getText();
+//	            		values.add(Double.parseDouble(xpp.getText()));
+//	            	}
+	            }
+	            eventType = xpp.nextToken();
+	       }
+	        
+//	        hours = formatTimes(times);
+
+	    }catch(XmlPullParserException e){
+	    	e.printStackTrace();
+	    }catch(IOException e){
+	    	e.printStackTrace();
+	    }
+	    
+	    return new Variable[1];
+	}
+	
+	private class MyTask extends AsyncTask<Void, Void, Void>{
+		
+		String textResult;
+	    
+	    @Override
+	    protected Void doInBackground(Void... params) {
+	    	UnidataSuperActivity.setDone(false);
+	    	
+	        URL textUrl;
+	        String address = UnidataSuperActivity.getModelURL();
+	        try {
+	         textUrl = new URL(address);
+
+	         BufferedReader bufferReader 
+	          = new BufferedReader(new InputStreamReader(textUrl.openStream()));
+	         
+	         String StringBuffer;
+	         String stringText = "";
+	         while ((StringBuffer = bufferReader.readLine()) != null) {
+	          stringText += StringBuffer;   
+	         }
+	         bufferReader.close();
+
+	         textResult = stringText;
+	         
+	        } catch (MalformedURLException e) {
+	         e.printStackTrace();
+	         textResult = e.toString();   
+	        } catch (IOException e) {
+	         e.printStackTrace();
+	         textResult = e.toString();   
+	        }
+	        
+	        UnidataSuperActivity.setModelXML(textResult);
+	        UnidataSuperActivity.setDone(true);
+
+	     return null;
+	     
+	    }
+	    
+	    @Override
+	    protected void onPostExecute(Void result) {
+	    	
+	     super.onPostExecute(result);   
+	    }
 	}
 }

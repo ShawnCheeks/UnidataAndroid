@@ -1,8 +1,12 @@
 package com.example.unidataandroid;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -22,11 +26,13 @@ import org.achartengine.renderer.XYSeriesRenderer;
 import org.xmlpull.v1.XmlPullParserException;
 
 import com.example.unidataandroid.XMLParser.Entry;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
 
 import android.app.Activity;
 import android.graphics.Color;
@@ -43,9 +49,10 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
-public class DisplayActivity extends Activity {
+public class DisplayActivity extends UnidataSuperActivity {
 
 	/** The main dataset that includes all the series that go into a chart. */
 	  private XYMultipleSeriesDataset mDataset = new XYMultipleSeriesDataset();
@@ -59,14 +66,6 @@ public class DisplayActivity extends Activity {
 	  private Button mNewSeries;
 	  /** The chart view that displays the data. */
 	  private GraphicalView mChartView;
-	  
-	  static String URL;
-	  
-	    // XML node keys
-	    static final String KEY_ITEM = "item"; // parent node
-	    static final String KEY_NAME = "name";
-	    static final String KEY_COST = "cost";
-	    static final String KEY_DESC = "description";
 
 	  @Override
 	  protected void onSaveInstanceState(Bundle outState) {
@@ -94,8 +93,51 @@ public class DisplayActivity extends Activity {
 	    super.onCreate(savedInstanceState);
 	    setContentView(R.layout.activity_display);
 	    
-	    URL = "http://thredds.ucar.edu/thredds/ncss/grid/grib/NCEP/GFS/CONUS_80km/best?var=Temperature_height_above_ground&latitude=40&longitude=-105&time_start=2013-07-08T00%3A00%3A00Z&time_end=2013-07-10T00%3A00%3A00Z&vertCoord=&accept=xml";
-	    loadPage();
+	    String xml;
+	    
+	    ArrayList<String> times = new ArrayList<String>();
+		ArrayList<Integer> hours = new ArrayList<Integer>();
+		ArrayList<Double> values = new ArrayList<Double>();
+		String units = "";
+		
+		UnidataSuperActivity.setURL("http://thredds.ucar.edu/thredds/ncss/grid/grib/NCEP/GFS/CONUS_80km/best?var=Temperature_height_above_ground&latitude=40&longitude=-105&time_start=2013-07-08T00%3A00%3A00Z&time_end=2013-07-10T00%3A00%3A00Z&vertCoord=&accept=xml");
+		new MyTask().execute();
+		
+		while(!super.getDone()){}
+		
+		xml = super.getXML();
+	    try
+	    {
+	    	XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+	    	factory.setNamespaceAware(false);
+	        XmlPullParser xpp = factory.newPullParser();
+
+	        xpp.setInput(new StringReader (xml));
+	        int eventType = xpp.getEventType();
+	        while (eventType != XmlPullParser.END_DOCUMENT) {
+	            if(eventType == XmlPullParser.START_TAG) {
+	            	if(xpp.getAttributeValue(null, "name") != null && xpp.getAttributeValue(null, "name").equals("date")){
+	            		eventType = xpp.nextToken();
+	            		xpp.getText();
+	            		times.add(xpp.getText());
+	            	} else if(xpp.getAttributeValue(null, "units")!=null && xpp.getAttributeValue(null, "units").equals("K")){
+	            		if(units.equals(""))
+	            			units = xpp.getAttributeValue(null, "units");
+	            		eventType = xpp.nextToken();
+	            		xpp.getText();
+	            		values.add(Double.parseDouble(xpp.getText()));
+	            	}
+	            }
+	            eventType = xpp.nextToken();
+	       }
+	        
+	        hours = formatTimes(times);
+
+	    }catch(XmlPullParserException e){
+	    	e.printStackTrace();
+	    }catch(IOException e){
+	    	e.printStackTrace();
+	    }
 
 	    // set some properties on the main renderer
 	    mRenderer.setApplyBackgroundColor(true);
@@ -127,12 +169,12 @@ public class DisplayActivity extends Activity {
         renderer.setColor(Color.argb(255, 255, 255, 0));
         mCurrentRenderer = renderer;
         
-        double[] xs = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23};
-        double[] ys = {83,84,85,86,86,85,83,81,78,76,73,71,70,68,67,66,65,64,65,69,73,78,83,86};
+        Integer[] xs = hours.toArray(new Integer[hours.size()]);
+        Double[] ys = values.toArray(new Double[values.size()]);
         
         for(int i=0; i < xs.length; i++)
         {
-        	mCurrentSeries.add(xs[i], ys[i]);
+        	mCurrentSeries.add(xs[i].intValue(), ys[i].doubleValue());
         }
 	  }
 
@@ -152,61 +194,105 @@ public class DisplayActivity extends Activity {
 	    }
 	  }
 	  
-	  public void loadPage() {
-		  new DownloadXmlTask().execute(URL);
-	  }
-	  
-	  private class DownloadXmlTask extends AsyncTask<String, Void, String> {
-		  @Override
-		  protected String doInBackground(String... urls) {
-			  try {
-				  return loadXmlFromNetwork(urls[0]);
-			  } catch(IOException e) {
-				  return e.getMessage();
-			  } catch(XmlPullParserException e) {
-				  return e.getMessage();
-			  }			  
-		  }
-		  
-		  @Override
-		  protected void onPostExecute(String result) {
-		  }
-	  }
-	  
-	  private String loadXmlFromNetwork(String urlString) throws XmlPullParserException, IOException {
-		  InputStream stream = null;
-		  //instantiate the parser
-		  XMLParser xmlParser = new XMLParser();
-		  List<Entry> entries = null;
-		  
-		  try {
-			  stream = downloadUrl(urlString);
-			  entries = xmlParser.parse(stream);
-			  
-			  //Makes sure that the InputStream is closed after the app is finished using it
-		  } finally {
-			  if (stream != null) {
-				  stream.close();
-			  }
-		  }
-		  
-		  for(Entry entry : entries)
-		  {
-			  System.out.println(entry.variable);
-		  }
-		  
-		  return entries.toString();
-	  }
-	  
-	  private InputStream downloadUrl(String urlString) throws IOException {
-		  URL url = new URL(urlString);
-		  HttpURLConnection conn = (HttpURLConnection)url.openConnection();
-		  conn.setReadTimeout(10000 /* milliseconds */);
-		  conn.setConnectTimeout(15000 /* milliseconds */);
-		  conn.setRequestMethod("GET");
-		  conn.setDoInput(true);
-		  //Start the query
-		  conn.connect();
-		  return conn.getInputStream();
-	  }
+	  public ArrayList<Integer> formatTimes(ArrayList<String> times)
+		{
+			Calendar startTime = Calendar.getInstance();
+			startTime.set(Integer.parseInt(times.get(0).substring(0, 4)), 
+						  Integer.parseInt(times.get(0).substring(5, 7)), 
+						  Integer.parseInt(times.get(0).substring(8, 10)), 
+						  Integer.parseInt(times.get(0).substring(11, 13)),
+						  Integer.parseInt(times.get(0).substring(14, 16)),
+					      Integer.parseInt(times.get(0).substring(17, 19)));
+			
+//			System.out.println(times.get(0).substring(0, 4));
+//			System.out.println(times.get(0).substring(5, 7));
+//			System.out.println(times.get(0).substring(8, 10));
+//			System.out.println(times.get(0).substring(11, 13));
+//			System.out.println(times.get(0).substring(14, 16));
+//			System.out.println(times.get(0).substring(17, 19));
+			
+			ArrayList<Integer> timePassed = new ArrayList<Integer>();
+			timePassed.add(0);
+			
+			for (int i=1; i<times.size(); i++)
+			{
+				Calendar thisTime = Calendar.getInstance();
+				thisTime.set(Integer.parseInt(times.get(i).substring(0, 4)), 
+						  	 Integer.parseInt(times.get(i).substring(5, 7)), 
+						  	 Integer.parseInt(times.get(i).substring(8, 10)), 
+						  	 Integer.parseInt(times.get(i).substring(11, 13)),
+						  	 Integer.parseInt(times.get(i).substring(14, 16)),
+						  	 Integer.parseInt(times.get(i).substring(17, 19)));
+				
+//				System.out.println(times.get(i).substring(0, 4));
+//				System.out.println(times.get(i).substring(5, 7));
+//				System.out.println(times.get(i).substring(8, 10));
+//				System.out.println(times.get(i).substring(11, 13));
+//				System.out.println(times.get(i).substring(14, 16));
+//				System.out.println(times.get(i).substring(17, 19));
+				
+//				System.out.println(thisTime.getTimeInMillis() + "---" + startTime.getTimeInMillis());
+				int differenceHours = (int) ((thisTime.getTimeInMillis() - startTime.getTimeInMillis()) / 3600000);
+				
+				timePassed.add(differenceHours);
+			}
+			
+			return timePassed;
+			
+		}
+
+		@Override
+		public boolean onCreateOptionsMenu(Menu menu) {
+			// Inflate the menu; this adds items to the action bar if it is present.
+			getMenuInflater().inflate(R.menu.main, menu);
+			return true;
+		}
+
+		private class MyTask extends AsyncTask<Void, Void, Void>{
+			
+			String textResult;
+			
+		    
+		    @Override
+		    protected Void doInBackground(Void... params) {
+		    	UnidataSuperActivity.setDone(false);
+		    	
+		        URL textUrl;
+		        String address = UnidataSuperActivity.getURL();
+		        try {
+		         textUrl = new URL(address);
+
+		         BufferedReader bufferReader 
+		          = new BufferedReader(new InputStreamReader(textUrl.openStream()));
+		         
+		         String StringBuffer;
+		         String stringText = "";
+		         while ((StringBuffer = bufferReader.readLine()) != null) {
+		          stringText += StringBuffer;   
+		         }
+		         bufferReader.close();
+
+		         textResult = stringText;
+		         
+		        } catch (MalformedURLException e) {
+		         e.printStackTrace();
+		         textResult = e.toString();   
+		        } catch (IOException e) {
+		         e.printStackTrace();
+		         textResult = e.toString();   
+		        }
+		        
+		        UnidataSuperActivity.setXML(textResult);
+		        UnidataSuperActivity.setDone(true);
+
+		     return null;
+		     
+		    }
+		    
+		    @Override
+		    protected void onPostExecute(Void result) {
+		    	
+		     super.onPostExecute(result);   
+		    }
+		}
 }
