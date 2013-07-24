@@ -7,7 +7,7 @@
     <string name="main_product_type">Choose a product type:</string>
     <string name="main_product">Choose a product:</string>
     <string name="main_location">Location of interest:</string>
-    <string name="main_variables">Variables to display:</string>
+    <string name="main_variables">Variable to display:</string>
     <string name="main_submit">SUBMIT</string>
     <string name="location_lat">LAT:</string>
     <string name="location_lon">LON:</string>
@@ -33,6 +33,12 @@
     </string-array>
     <string-array name="variables_empty">
         <item>Please choose a product first</item>
+    </string-array>
+    <string-array name="time_start_empty">
+        <item>Please choose a variable first</item>
+    </string-array>
+    <string-array name="time_end_empty">
+        <item>Please choose a starting time first</item>
     </string-array>
 
     <string name="title_activity_display">DisplayActivity</string>

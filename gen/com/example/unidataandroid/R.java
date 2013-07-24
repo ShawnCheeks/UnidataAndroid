@@ -12,6 +12,8 @@ public final class R {
         public static final int main_product_types=0x7f080000;
         public static final int products_empty=0x7f080002;
         public static final int products_ncep=0x7f080001;
+        public static final int time_end_empty=0x7f080006;
+        public static final int time_start_empty=0x7f080005;
         public static final int variables_empty=0x7f080004;
         public static final int variables_gfs_conus_80km=0x7f080003;
     }
@@ -191,15 +193,15 @@ containing a value of this type.
     }
     public static final class id {
         public static final int LayoutTop=0x7f050009;
-        public static final int action_settings=0x7f05001e;
+        public static final int action_settings=0x7f050020;
         public static final int button_location_current=0x7f050010;
         public static final int button_location_show=0x7f050011;
-        public static final int button_submit=0x7f05001d;
+        public static final int button_submit=0x7f05001f;
         public static final int chart=0x7f050005;
         public static final int edittext_lat=0x7f05000d;
         public static final int edittext_lon=0x7f05000f;
-        public static final int edittext_time_end=0x7f05001a;
-        public static final int edittext_time_start=0x7f050018;
+        public static final int edittext_time_end=0x7f05001e;
+        public static final int edittext_time_start=0x7f05001b;
         public static final int fragment_map=0x7f05000b;
         public static final int hybrid=0x7f050004;
         public static final int new_series=0x7f050006;
@@ -210,16 +212,18 @@ containing a value of this type.
         public static final int scrollView1=0x7f050012;
         public static final int spinner_product=0x7f050016;
         public static final int spinner_product_type=0x7f050014;
-        public static final int spinner_variable=0x7f05001c;
+        public static final int spinner_time_end=0x7f05001d;
+        public static final int spinner_time_start=0x7f05001a;
+        public static final int spinner_variable=0x7f050018;
         public static final int terrain=0x7f050003;
         public static final int textview_lat=0x7f05000c;
         public static final int textview_location=0x7f05000a;
         public static final int textview_lon=0x7f05000e;
         public static final int textview_product=0x7f050015;
         public static final int textview_product_type=0x7f050013;
-        public static final int textview_time_end=0x7f050019;
-        public static final int textview_time_start=0x7f050017;
-        public static final int textview_variables=0x7f05001b;
+        public static final int textview_time_end=0x7f05001c;
+        public static final int textview_time_start=0x7f050019;
+        public static final int textview_variables=0x7f050017;
         public static final int textview_welcome=0x7f050008;
     }
     public static final class layout {

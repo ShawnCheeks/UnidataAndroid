@@ -62,24 +62,14 @@ public class MainActivity extends UnidataSuperActivity
 implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, OnTouchListener{
 	
 	//declare the widgets
-	private TextView tvMainWelcome,
-					 tvMainProductType,
-					 tvMainProduct,
-					 tvMainLocation,
-					 tvMainLat,
-					 tvMainLon,
-					 tvMainTimeStart,
-					 tvMainTimeEnd,
-					 tvMainVariables;
 	private Spinner spinMainProductType,
 					spinMainProduct,
-					spinMainVariables;
+					spinMainVariables,
+					spinMainTimeStart,
+					spinMainTimeEnd;
+					
 	private EditText etMainLat,
-					 etMainLon,
-					 etMainTimeStart,
-					 etMainTimeEnd;
-//	private GridView gvVariables;
-	private Button bMainSubmit;
+					 etMainLon;
 	
 	private GoogleMap mapMainLocation;
 	private Marker myMarker;
@@ -197,31 +187,20 @@ implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, On
 		/*
 		 * starting & ending times default
 		 */
-		etMainTimeStart.setText(dateFormat.format(startCalendar.getTime()));
-		endCalendar.add(Calendar.DATE, 2);
-		etMainTimeEnd.setText(dateFormat.format(endCalendar.getTime()));
+//		etMainTimeStart.setText(dateFormat.format(startCalendar.getTime()));
+//		endCalendar.add(Calendar.DATE, 2);
+//		etMainTimeEnd.setText(dateFormat.format(endCalendar.getTime()));
 	}
 	public void initForm()
 	{
 		//link the everything to the xml counterparts
-		tvMainWelcome     = (TextView)findViewById(R.id.textview_welcome);
-		tvMainProductType = (TextView)findViewById(R.id.textview_product_type);
-		tvMainProduct     = (TextView)findViewById(R.id.textview_product);
-		tvMainLocation    = (TextView)findViewById(R.id.textview_location);
-		tvMainLat    = (TextView)findViewById(R.id.textview_lat);
-		tvMainLon    = (TextView)findViewById(R.id.textview_lon);
-		tvMainTimeStart   = (TextView)findViewById(R.id.textview_time_start);
-		tvMainTimeEnd     = (TextView)findViewById(R.id.textview_time_end);
-		tvMainVariables   = (TextView)findViewById(R.id.textview_variables);
 		spinMainProductType = (Spinner)findViewById(R.id.spinner_product_type);
 		spinMainProduct     = (Spinner)findViewById(R.id.spinner_product);
 		spinMainVariables	= (Spinner)findViewById(R.id.spinner_variable);
+		spinMainTimeStart 	= (Spinner)findViewById(R.id.spinner_time_start);
+		spinMainTimeEnd		= (Spinner)findViewById(R.id.spinner_time_end);
 		etMainLat       = (EditText)findViewById(R.id.edittext_lat);
 		etMainLon       = (EditText)findViewById(R.id.edittext_lon);
-		etMainTimeStart = (EditText)findViewById(R.id.edittext_time_start);
-		etMainTimeEnd   = (EditText)findViewById(R.id.edittext_time_end);
-//		gvVariables = (GridView)findViewById(R.id.gridview_variables);
-		bMainSubmit = (Button)findViewById(R.id.button_location_show);
 		//map requires special setup
 		setUpMapIfNeeded();
 		setUpLocationClientIfNeeded();
@@ -331,28 +310,22 @@ implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, On
 		System.out.println(modelVariables[spinMainVariables.getSelectedItemPosition()].getName());
 		System.out.println(etMainLat.getText().toString());
 		System.out.println(etMainLon.getText().toString());
-		System.out.println(etMainTimeStart.getText().toString());
-		System.out.println(etMainTimeEnd.getText().toString());
+//		System.out.println(etMainTimeStart.getText().toString());
+//		System.out.println(etMainTimeEnd.getText().toString());
 		
 		String a,b,c,d,e;
 		a=modelVariables[spinMainVariables.getSelectedItemPosition()].getName();
 		b=etMainLat.getText().toString();
 		c=etMainLon.getText().toString();
-		d=etMainTimeStart.getText().toString().replace(":", "%3");
-		e=etMainTimeEnd.getText().toString().replace(":", "%3");
-//		super.setURL("http://thredds.ucar.edu/thredds/ncss/grid/grib/NCEP/GFS/CONUS_80km/best" +
-//					 "?var=" + modelVariables[spinMainVariables.getSelectedItemPosition()].getName() +
-//					 "&latitude=" + etMainLat.getText().toString() +
-//					 "&longitude=" + etMainLon.getText().toString() +
-//					 "&time_start=" + etMainTimeStart.getText().toString().replace(":", "%3") +
-//					 "&time_end=" + etMainTimeEnd.getText().toString().replace(":", "%3") +
-//					 "&vertCoord=&accept=xml");
+//		d=etMainTimeStart.getText().toString().replace(":", "%3");
+//		e=etMainTimeEnd.getText().toString().replace(":", "%3");
+		
 		super.setURL("http://thredds.ucar.edu/thredds/ncss/grid/grib/NCEP/GFS/CONUS_80km/best" +
 					 "?var=" + a +
 					 "&latitude=" + b +
 					 "&longitude=" + c +
-					 "&time_start=" + d +
-					 "&time_end=" + e +
+//					 "&time_start=" + d +
+//					 "&time_end=" + e +
 					 "&vertCoord=&accept=xml");
 		super.setSampleVariable(modelVariables[spinMainVariables.getSelectedItemPosition()]);
 		Intent i = new Intent(this, DisplayActivity.class);
@@ -453,6 +426,10 @@ implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, On
 	        int eventType = xpp.getEventType();
 	        
 	        while(eventType != XmlPullParser.END_DOCUMENT) {
+	        	if(xpp.getDepth()==2 && xpp.getAttributeValue(null, "name")!=null && xpp.getAttributeValue(null, "name").equals("time")){
+	        		xpp.nextTag();
+	        		super.setValidTimes(xpp.getAttributeValue(null, "value").substring(11));
+	        	}
 	        	if(xpp.getDepth()==3 && xpp.getAttributeValue(null, "shape")!=null && xpp.getAttributeValue(null, "shape").equals("time y x")){
 	        		System.out.println(xpp.getAttributeValue(null, "name") + "\n" + xpp.getAttributeValue(null, "desc"));
 	        		name = xpp.getAttributeValue(null, "name");
