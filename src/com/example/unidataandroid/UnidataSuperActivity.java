@@ -6,8 +6,9 @@ public class UnidataSuperActivity extends FragmentActivity {
 
 		private static String URL = "";
 		private static String XML = "";
-		private static String ModelURL = "";
-		private static String ModelXML = "";
+		private static String modelURL = "";
+		private static String modelXML = "";
+		private static Variable sampleVariable;
 		private static boolean DONE = false;
 		
 		/*
@@ -39,24 +40,36 @@ public class UnidataSuperActivity extends FragmentActivity {
 		 */
 		public static String getModelURL()
 		{
-			return URL;
+			return modelURL;
 		}
 		
 		public static void setModelURL(String url)
 		{
-			URL = url;
+			modelURL = url;
 		}
 		/*
 		 * Model XML
 		 */
 		public static String getModelXML()
 		{
-			return XML;
+			return modelXML;
 		}
 		
 		public static void setModelXML(String xml)
 		{
-			XML = xml;
+			modelXML = xml;
+		}
+		/*
+		 * Variable Type
+		 */
+		public static Variable getSampleVariable()
+		{
+			return sampleVariable;
+		}
+		
+		public static void setSampleVariable(Variable var)
+		{
+			sampleVariable = var;
 		}
 		/*
 		 * Conditional 'Are we done yet?' variable

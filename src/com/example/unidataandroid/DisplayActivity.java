@@ -1,6 +1,7 @@
 package com.example.unidataandroid;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -23,6 +24,7 @@ import org.achartengine.model.XYSeries;
 import org.achartengine.renderer.DefaultRenderer;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
 import org.achartengine.renderer.XYSeriesRenderer;
+import org.apache.commons.io.FileUtils;
 import org.xmlpull.v1.XmlPullParserException;
 
 import com.example.unidataandroid.XMLParser.Entry;
@@ -100,9 +102,10 @@ public class DisplayActivity extends UnidataSuperActivity {
 		ArrayList<Double> values = new ArrayList<Double>();
 		String units = "";
 		
-		UnidataSuperActivity.setURL("http://thredds.ucar.edu/thredds/ncss/grid/grib/NCEP/GFS/CONUS_80km/best?var=Temperature_height_above_ground&latitude=40&longitude=-105&time_start=2013-07-08T00%3A00%3A00Z&time_end=2013-07-10T00%3A00%3A00Z&vertCoord=&accept=xml");
+//		UnidataSuperActivity.setURL("http://thredds.ucar.edu/thredds/ncss/grid/grib/NCEP/GFS/CONUS_80km/best?var=Temperature_height_above_ground&latitude=40&longitude=-105&time_start=2013-07-08T00%3A00%3A00Z&time_end=2013-07-10T00%3A00%3A00Z&vertCoord=&accept=xml");
 		new MyTask().execute();
 		
+		super.setDone(false);
 		while(!super.getDone()){}
 		
 		xml = super.getXML();
@@ -112,6 +115,8 @@ public class DisplayActivity extends UnidataSuperActivity {
 	    	factory.setNamespaceAware(false);
 	        XmlPullParser xpp = factory.newPullParser();
 
+	        System.out.println(super.getSampleVariable().getName());
+	        
 	        xpp.setInput(new StringReader (xml));
 	        int eventType = xpp.getEventType();
 	        while (eventType != XmlPullParser.END_DOCUMENT) {
@@ -120,9 +125,9 @@ public class DisplayActivity extends UnidataSuperActivity {
 	            		eventType = xpp.nextToken();
 	            		xpp.getText();
 	            		times.add(xpp.getText());
-	            	} else if(xpp.getAttributeValue(null, "units")!=null && xpp.getAttributeValue(null, "units").equals("K")){
+	            	} else if(xpp.getAttributeValue(null, "units")!=null && xpp.getAttributeValue(null, "name").equals(super.getSampleVariable().getName())){
 	            		if(units.equals(""))
-	            			units = xpp.getAttributeValue(null, "units");
+	            			units = super.getSampleVariable().getUnits();
 	            		eventType = xpp.nextToken();
 	            		xpp.getText();
 	            		values.add(Double.parseDouble(xpp.getText()));
@@ -143,17 +148,21 @@ public class DisplayActivity extends UnidataSuperActivity {
 	    mRenderer.setApplyBackgroundColor(true);
 	    mRenderer.setBackgroundColor(Color.argb(255, 0, 0, 0));
 	    mRenderer.setAxisTitleTextSize(40);
-	    mRenderer.setChartTitleTextSize(40);
-	    mRenderer.setLabelsTextSize(40);
+	    mRenderer.setChartTitleTextSize(50);
+	    mRenderer.setLabelsTextSize(35);
 	    mRenderer.setLegendTextSize(40);
-	    mRenderer.setMargins(new int[] {20, 20, 50, 30 });
+	    mRenderer.setMargins(new int[] {150, 100, 0, 20 });
 	    mRenderer.setZoomButtonsVisible(false);
-	    mRenderer.setPointSize(15);
+	    mRenderer.setPointSize(10);
 	    mRenderer.setShowGrid(true);
 	    mRenderer.setGridColor(Color.argb(255,255,255,255));
 	    mRenderer.setZoomRate((float) .8);
+	    mRenderer.setChartTitle(super.getSampleVariable().getDescription());
+	    mRenderer.setXTitle("Hours From Start");
+	    mRenderer.setYTitle(super.getSampleVariable().getUnits());
 	    
-	    String seriesTitle = "Temperature";
+	    
+	    String seriesTitle = super.getSampleVariable().getDescription();
         // create a new series of data
         XYSeries series = new XYSeries(seriesTitle);
         mDataset.addSeries(series);
@@ -164,7 +173,10 @@ public class DisplayActivity extends UnidataSuperActivity {
         // set some renderer properties
         renderer.setPointStyle(PointStyle.CIRCLE);
         renderer.setFillPoints(true);
-        renderer.setDisplayChartValues(true);
+        renderer.setDisplayChartValues(false);
+        renderer.setChartValuesTextSize(30);
+        renderer.setLineWidth(5);
+        renderer.setShowLegendItem(false);
         renderer.setDisplayChartValuesDistance(10);
         renderer.setColor(Color.argb(255, 255, 255, 0));
         mCurrentRenderer = renderer;
@@ -204,13 +216,6 @@ public class DisplayActivity extends UnidataSuperActivity {
 						  Integer.parseInt(times.get(0).substring(14, 16)),
 					      Integer.parseInt(times.get(0).substring(17, 19)));
 			
-//			System.out.println(times.get(0).substring(0, 4));
-//			System.out.println(times.get(0).substring(5, 7));
-//			System.out.println(times.get(0).substring(8, 10));
-//			System.out.println(times.get(0).substring(11, 13));
-//			System.out.println(times.get(0).substring(14, 16));
-//			System.out.println(times.get(0).substring(17, 19));
-			
 			ArrayList<Integer> timePassed = new ArrayList<Integer>();
 			timePassed.add(0);
 			
@@ -224,14 +229,6 @@ public class DisplayActivity extends UnidataSuperActivity {
 						  	 Integer.parseInt(times.get(i).substring(14, 16)),
 						  	 Integer.parseInt(times.get(i).substring(17, 19)));
 				
-//				System.out.println(times.get(i).substring(0, 4));
-//				System.out.println(times.get(i).substring(5, 7));
-//				System.out.println(times.get(i).substring(8, 10));
-//				System.out.println(times.get(i).substring(11, 13));
-//				System.out.println(times.get(i).substring(14, 16));
-//				System.out.println(times.get(i).substring(17, 19));
-				
-//				System.out.println(thisTime.getTimeInMillis() + "---" + startTime.getTimeInMillis());
 				int differenceHours = (int) ((thisTime.getTimeInMillis() - startTime.getTimeInMillis()) / 3600000);
 				
 				timePassed.add(differenceHours);
@@ -261,18 +258,23 @@ public class DisplayActivity extends UnidataSuperActivity {
 		        String address = UnidataSuperActivity.getURL();
 		        try {
 		         textUrl = new URL(address);
-
-		         BufferedReader bufferReader 
-		          = new BufferedReader(new InputStreamReader(textUrl.openStream()));
+		         System.out.println(textUrl);
+		         File testFile2 = File.createTempFile("temp2", ".dat");
+		         testFile2.deleteOnExit();
+		         FileUtils.copyURLToFile(textUrl, testFile2);
+		         textResult = FileUtils.readFileToString(testFile2);
 		         
-		         String StringBuffer;
-		         String stringText = "";
-		         while ((StringBuffer = bufferReader.readLine()) != null) {
-		          stringText += StringBuffer;   
-		         }
-		         bufferReader.close();
-
-		         textResult = stringText;
+//		         BufferedReader bufferReader 
+//		          = new BufferedReader(new InputStreamReader(textUrl.openStream()));
+//		         
+//		         String StringBuffer;
+//		         String stringText = "";
+//		         while ((StringBuffer = bufferReader.readLine()) != null) {
+//		          stringText += StringBuffer;   
+//		         }
+//		         bufferReader.close();
+//
+//		         textResult = stringText;
 		         
 		        } catch (MalformedURLException e) {
 		         e.printStackTrace();

@@ -5,9 +5,9 @@ public class Variable {
 	
 	public Variable(String name, String description, String units)
 	{
-		name = this.name;
-		description = this.description;
-		units = this.units;
+		this.name = name;
+		this.description = description;
+		this.units = units;
 	}
 	
 	public String getName()	{

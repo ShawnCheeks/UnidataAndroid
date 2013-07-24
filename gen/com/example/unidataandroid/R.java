@@ -201,7 +201,6 @@ containing a value of this type.
         public static final int edittext_time_end=0x7f05001a;
         public static final int edittext_time_start=0x7f050018;
         public static final int fragment_map=0x7f05000b;
-        public static final int gridview_variables=0x7f05001c;
         public static final int hybrid=0x7f050004;
         public static final int new_series=0x7f050006;
         public static final int none=0x7f050000;
@@ -211,6 +210,7 @@ containing a value of this type.
         public static final int scrollView1=0x7f050012;
         public static final int spinner_product=0x7f050016;
         public static final int spinner_product_type=0x7f050014;
+        public static final int spinner_variable=0x7f05001c;
         public static final int terrain=0x7f050003;
         public static final int textview_lat=0x7f05000c;
         public static final int textview_location=0x7f05000a;

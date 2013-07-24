@@ -1,6 +1,7 @@
 package com.example.unidataandroid;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
@@ -13,6 +14,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
+import org.apache.commons.io.FileUtils;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -34,6 +36,7 @@ import com.google.android.gms.maps.model.PolygonOptions;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.app.ActionBar.LayoutParams;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.FragmentActivity;
@@ -69,12 +72,13 @@ implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, On
 					 tvMainTimeEnd,
 					 tvMainVariables;
 	private Spinner spinMainProductType,
-					spinMainProduct;
+					spinMainProduct,
+					spinMainVariables;
 	private EditText etMainLat,
 					 etMainLon,
 					 etMainTimeStart,
 					 etMainTimeEnd;
-	private GridView gvVariables;
+//	private GridView gvVariables;
 	private Button bMainSubmit;
 	
 	private GoogleMap mapMainLocation;
@@ -100,6 +104,8 @@ implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, On
 					startTimeSelected = false,
 					endTimeSelected = false,
 					variableSelected = false;
+	
+	private Variable[] modelVariables;
 	
 	
 	// These settings are the same as the settings for the map. They will in fact give you updates at
@@ -164,7 +170,7 @@ implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, On
         productTypeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		productAdapter = ArrayAdapter.createFromResource(this, R.array.products_empty, android.R.layout.simple_spinner_item);        
         productAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        variableAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_multiple_choice, getResources().getStringArray(R.array.variables_empty));
+        variableAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, getResources().getStringArray(R.array.variables_empty));
         spinMainProductType.setAdapter(productTypeAdapter);
         spinMainProductType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -179,14 +185,15 @@ implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, On
         spinMainProduct.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 product = spinMainProduct.getSelectedItem().toString();
+
                 changeVariables();
-                gvVariables.setAdapter(variableAdapter);
+                spinMainVariables.setAdapter(variableAdapter);
             }
             public void onNothingSelected(AdapterView<?> parent) {
             	changeVariables();
             }
         });
-        gvVariables.setAdapter(variableAdapter);
+        spinMainVariables.setAdapter(variableAdapter);
 		/*
 		 * starting & ending times default
 		 */
@@ -208,11 +215,12 @@ implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, On
 		tvMainVariables   = (TextView)findViewById(R.id.textview_variables);
 		spinMainProductType = (Spinner)findViewById(R.id.spinner_product_type);
 		spinMainProduct     = (Spinner)findViewById(R.id.spinner_product);
+		spinMainVariables	= (Spinner)findViewById(R.id.spinner_variable);
 		etMainLat       = (EditText)findViewById(R.id.edittext_lat);
 		etMainLon       = (EditText)findViewById(R.id.edittext_lon);
 		etMainTimeStart = (EditText)findViewById(R.id.edittext_time_start);
 		etMainTimeEnd   = (EditText)findViewById(R.id.edittext_time_end);
-		gvVariables = (GridView)findViewById(R.id.gridview_variables);
+//		gvVariables = (GridView)findViewById(R.id.gridview_variables);
 		bMainSubmit = (Button)findViewById(R.id.button_location_show);
 		//map requires special setup
 		setUpMapIfNeeded();
@@ -227,12 +235,12 @@ implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, On
 	{
 		if(productType.equals("NCEP Model Data"))
 		{
-			productAdapter = ArrayAdapter.createFromResource(this, R.array.products_ncep, android.R.layout.simple_spinner_item);
+			productAdapter = ArrayAdapter.createFromResource(this, R.array.products_ncep, android.R.layout.simple_spinner_dropdown_item);
 			productTypeSelected = true;
 		}
 		else
 		{
-			productAdapter = ArrayAdapter.createFromResource(this, R.array.products_empty, android.R.layout.simple_spinner_item);
+			productAdapter = ArrayAdapter.createFromResource(this, R.array.products_empty, android.R.layout.simple_spinner_dropdown_item);
 			productTypeSelected = false;
 		}
 		
@@ -244,24 +252,32 @@ implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, On
 	}
 	public void changeVariables()
 	{
+		int number = 0;
 		if(product.equals("GFS CONUS 80km"))
 		{
 			UnidataSuperActivity.setModelURL("http://thredds.ucar.edu/thredds/ncss/grid/grib/NCEP/GFS/CONUS_80km/best/dataset.xml");
+			super.setDone(false);
 			new MyTask().execute();
-			Variable[] modelVariables = extractVariables(); 
-			variableAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_multiple_choice, getResources().getStringArray(R.array.variables_gfs_conus_80km));
+			modelVariables = extractVariables(); 
+			String[] modelVariableNames = new String[modelVariables.length];
+			number = modelVariables.length;
+			for(int i=0; i<modelVariables.length; i++)
+				modelVariableNames[i] = modelVariables[i].getDescription();
+			
+			variableAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, modelVariableNames);
 			productSelected = true;
 		}
 		else
 		{
-			variableAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, getResources().getStringArray(R.array.variables_empty));
+			variableAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, getResources().getStringArray(R.array.variables_empty));
 			productSelected = false;
 		}
 		
-		if(!productSelected)
-			gvVariables.setClickable(false);
-		else
-			gvVariables.setClickable(true);
+		if(!productSelected){
+			spinMainVariables.setClickable(false);
+		}else {
+			spinMainVariables.setClickable(true);
+		}
 	}
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -312,6 +328,33 @@ implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, On
 
 	public void callDisplayActivity(View view)
 	{
+		System.out.println(modelVariables[spinMainVariables.getSelectedItemPosition()].getName());
+		System.out.println(etMainLat.getText().toString());
+		System.out.println(etMainLon.getText().toString());
+		System.out.println(etMainTimeStart.getText().toString());
+		System.out.println(etMainTimeEnd.getText().toString());
+		
+		String a,b,c,d,e;
+		a=modelVariables[spinMainVariables.getSelectedItemPosition()].getName();
+		b=etMainLat.getText().toString();
+		c=etMainLon.getText().toString();
+		d=etMainTimeStart.getText().toString().replace(":", "%3");
+		e=etMainTimeEnd.getText().toString().replace(":", "%3");
+//		super.setURL("http://thredds.ucar.edu/thredds/ncss/grid/grib/NCEP/GFS/CONUS_80km/best" +
+//					 "?var=" + modelVariables[spinMainVariables.getSelectedItemPosition()].getName() +
+//					 "&latitude=" + etMainLat.getText().toString() +
+//					 "&longitude=" + etMainLon.getText().toString() +
+//					 "&time_start=" + etMainTimeStart.getText().toString().replace(":", "%3") +
+//					 "&time_end=" + etMainTimeEnd.getText().toString().replace(":", "%3") +
+//					 "&vertCoord=&accept=xml");
+		super.setURL("http://thredds.ucar.edu/thredds/ncss/grid/grib/NCEP/GFS/CONUS_80km/best" +
+					 "?var=" + a +
+					 "&latitude=" + b +
+					 "&longitude=" + c +
+					 "&time_start=" + d +
+					 "&time_end=" + e +
+					 "&vertCoord=&accept=xml");
+		super.setSampleVariable(modelVariables[spinMainVariables.getSelectedItemPosition()]);
 		Intent i = new Intent(this, DisplayActivity.class);
 		startActivity(i);
 	}
@@ -398,8 +441,8 @@ implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, On
 		while(!UnidataSuperActivity.getDone()){}
 		
 		ArrayList<Variable> variables = new ArrayList<Variable>();
-		
-		String modelXml = super.getXML();
+		String name, desc, unit;
+		String modelXml = super.getModelXML();
 	    try
 	    {
 	    	XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
@@ -408,41 +451,29 @@ implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, On
 
 	        xpp.setInput(new StringReader (modelXml));
 	        int eventType = xpp.getEventType();
-	        while (eventType != XmlPullParser.END_DOCUMENT) {
-	            if(eventType == XmlPullParser.START_TAG) {
-	            	if(xpp.getName().equals("grid"))	{
-	            		if(xpp.getAttributeValue(null, "shape") != null && xpp.getAttributeValue(null, "shape").equals("time y x")){
-	            			System.out.println(xpp.getAttributeValue(null, "name") + "\n" + xpp.getAttributeValue(null, "desc"));
-	            			boolean keepGoing = true;
-	            			xpp.nextTag();
-	            			while(xpp.getDepth()==4 && keepGoing)
-	            			{
-	            				if(xpp.getAttributeValue(null, "name").equals("units"))
-	            				{
-	            					System.out.println(xpp.getAttributeValue(null, "value"));
-	            					keepGoing = false;
-	            				} else {
-	            					xpp.nextTag();
-	            				}	            				
-	            			}
-	            		}
-	            	}
-//	            	if(xpp.getAttributeValue(null, "name") != null && xpp.getAttributeValue(null, "name").equals("date")){
-//	            		eventType = xpp.nextToken();
-//	            		xpp.getText();
-//	            		times.add(xpp.getText());
-//	            	} else if(xpp.getAttributeValue(null, "units")!=null && xpp.getAttributeValue(null, "units").equals("K")){
-//	            		if(units.equals(""))
-//	            			units = xpp.getAttributeValue(null, "units");
-//	            		eventType = xpp.nextToken();
-//	            		xpp.getText();
-//	            		values.add(Double.parseDouble(xpp.getText()));
-//	            	}
-	            }
-	            eventType = xpp.nextToken();
-	       }
 	        
-//	        hours = formatTimes(times);
+	        while(eventType != XmlPullParser.END_DOCUMENT) {
+	        	if(xpp.getDepth()==3 && xpp.getAttributeValue(null, "shape")!=null && xpp.getAttributeValue(null, "shape").equals("time y x")){
+	        		System.out.println(xpp.getAttributeValue(null, "name") + "\n" + xpp.getAttributeValue(null, "desc"));
+	        		name = xpp.getAttributeValue(null, "name");
+	        		desc = xpp.getAttributeValue(null, "desc");
+        			boolean keepGoing = true;
+	            	xpp.nextTag();
+	            	while(xpp.getDepth()==4 && keepGoing)
+	            	{
+	            		if(xpp.getAttributeValue(null, "name").equals("units"))
+	            		{
+	            			System.out.println(xpp.getAttributeValue(null, "value"));
+	            			unit = xpp.getAttributeValue(null, "value");
+	            			keepGoing = false;
+	            			variables.add(new Variable(name, desc, unit));
+	            		} else {
+	            			xpp.nextTag();
+	            		}	            				
+	            	}
+	        	}
+	        	eventType = xpp.nextToken();
+	        }
 
 	    }catch(XmlPullParserException e){
 	    	e.printStackTrace();
@@ -450,7 +481,7 @@ implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, On
 	    	e.printStackTrace();
 	    }
 	    
-	    return new Variable[1];
+	    return variables.toArray(new Variable[variables.size()]);
 	}
 	
 	private class MyTask extends AsyncTask<Void, Void, Void>{
@@ -465,18 +496,11 @@ implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, On
 	        String address = UnidataSuperActivity.getModelURL();
 	        try {
 	         textUrl = new URL(address);
-
-	         BufferedReader bufferReader 
-	          = new BufferedReader(new InputStreamReader(textUrl.openStream()));
 	         
-	         String StringBuffer;
-	         String stringText = "";
-	         while ((StringBuffer = bufferReader.readLine()) != null) {
-	          stringText += StringBuffer;   
-	         }
-	         bufferReader.close();
-
-	         textResult = stringText;
+	         File testFile = File.createTempFile("temp", ".dat");
+	         testFile.deleteOnExit();
+	         FileUtils.copyURLToFile(textUrl, testFile);
+	         textResult = FileUtils.readFileToString(testFile);
 	         
 	        } catch (MalformedURLException e) {
 	         e.printStackTrace();
