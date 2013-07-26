@@ -10,6 +10,7 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
@@ -76,7 +77,9 @@ implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, On
 	
 	private ArrayAdapter<?> productTypeAdapter,
 							productAdapter,
-							variableAdapter;
+							variableAdapter,
+							timeStartAdapter,
+							timeEndAdapter;
 	
 	private Calendar startCalendar = new GregorianCalendar();
 	private Calendar endCalendar = new GregorianCalendar();
@@ -85,7 +88,7 @@ implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, On
 	private RelativeLayout parentLayout;
 	
 	private String lat = "0", lon = "0";
-	private String productType, product;
+	private String productType, product, variable, timeStart, timeEnd;
 	
 	private boolean productTypeSelected = false,
 					productSelected = false,
@@ -161,6 +164,8 @@ implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, On
 		productAdapter = ArrayAdapter.createFromResource(this, R.array.products_empty, android.R.layout.simple_spinner_item);        
         productAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         variableAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, getResources().getStringArray(R.array.variables_empty));
+        timeStartAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, getResources().getStringArray(R.array.time_start_empty));
+        timeEndAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, getResources().getStringArray(R.array.time_end_empty));
         spinMainProductType.setAdapter(productTypeAdapter);
         spinMainProductType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -172,6 +177,7 @@ implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, On
             	changeProducts();
             }
         });
+        spinMainProduct.setAdapter(productAdapter);
         spinMainProduct.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 product = spinMainProduct.getSelectedItem().toString();
@@ -184,6 +190,41 @@ implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, On
             }
         });
         spinMainVariables.setAdapter(variableAdapter);
+        spinMainVariables.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        	public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        		variable = spinMainVariables.getSelectedItem().toString();
+        		
+        		changeTimeStart();
+        		spinMainTimeStart.setAdapter(timeStartAdapter);
+        	}
+
+			public void onNothingSelected(AdapterView<?> arg0) {
+				changeTimeStart();
+			}
+        });
+        spinMainTimeStart.setAdapter(timeStartAdapter);
+        spinMainTimeStart.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        	public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        		timeStart = spinMainTimeStart.getSelectedItem().toString();
+        		
+        		changeTimeEnd();
+        		spinMainTimeEnd.setAdapter(timeEndAdapter);
+        	}
+
+			public void onNothingSelected(AdapterView<?> arg0) {
+				changeTimeEnd();
+			}
+        });
+        spinMainTimeEnd.setAdapter(timeEndAdapter);
+        spinMainTimeEnd.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        	public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        		timeStart = spinMainTimeStart.getSelectedItem().toString();
+        	}
+
+			public void onNothingSelected(AdapterView<?> arg0) {
+				changeTimeEnd();
+			}
+        });
 		/*
 		 * starting & ending times default
 		 */
@@ -231,7 +272,6 @@ implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, On
 	}
 	public void changeVariables()
 	{
-		int number = 0;
 		if(product.equals("GFS CONUS 80km"))
 		{
 			UnidataSuperActivity.setModelURL("http://thredds.ucar.edu/thredds/ncss/grid/grib/NCEP/GFS/CONUS_80km/best/dataset.xml");
@@ -239,7 +279,6 @@ implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, On
 			new MyTask().execute();
 			modelVariables = extractVariables(); 
 			String[] modelVariableNames = new String[modelVariables.length];
-			number = modelVariables.length;
 			for(int i=0; i<modelVariables.length; i++)
 				modelVariableNames[i] = modelVariables[i].getDescription();
 			
@@ -258,6 +297,38 @@ implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, On
 			spinMainVariables.setClickable(true);
 		}
 	}
+	public void changeTimeStart(){
+		if(productSelected){
+			timeStartAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, super.getValidTimes());
+			startTimeSelected = true;
+		}
+		else {
+			timeStartAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, getResources().getStringArray(R.array.time_start_empty));
+			startTimeSelected = true;
+		}
+		
+		if(!productSelected){
+			spinMainVariables.setClickable(false);
+		}else {
+			spinMainVariables.setClickable(true);
+		}
+	}
+	public void changeTimeEnd(){
+		if(startTimeSelected){
+			String[] startTimes = super.getValidTimes();
+			String[] endTimes = Arrays.copyOfRange(startTimes, spinMainTimeStart.getSelectedItemPosition()+1, startTimes.length);
+			timeEndAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, endTimes);
+		}else{
+			timeEndAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, getResources().getStringArray(R.array.time_end_empty));
+		}
+		
+		if(!startTimeSelected){
+			spinMainVariables.setClickable(false);
+		}else {
+			spinMainVariables.setClickable(true);
+		}
+	}
+	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
@@ -307,9 +378,9 @@ implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, On
 
 	public void callDisplayActivity(View view)
 	{
-		System.out.println(modelVariables[spinMainVariables.getSelectedItemPosition()].getName());
-		System.out.println(etMainLat.getText().toString());
-		System.out.println(etMainLon.getText().toString());
+//		System.out.println(modelVariables[spinMainVariables.getSelectedItemPosition()].getName());
+//		System.out.println(etMainLat.getText().toString());
+//		System.out.println(etMainLon.getText().toString());
 //		System.out.println(etMainTimeStart.getText().toString());
 //		System.out.println(etMainTimeEnd.getText().toString());
 		
@@ -317,15 +388,15 @@ implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, On
 		a=modelVariables[spinMainVariables.getSelectedItemPosition()].getName();
 		b=etMainLat.getText().toString();
 		c=etMainLon.getText().toString();
-//		d=etMainTimeStart.getText().toString().replace(":", "%3");
-//		e=etMainTimeEnd.getText().toString().replace(":", "%3");
+		d=spinMainTimeStart.getSelectedItem().toString().replace(":", "%3A");
+		e=spinMainTimeEnd.getSelectedItem().toString().replace(":", "%3A");
 		
 		super.setURL("http://thredds.ucar.edu/thredds/ncss/grid/grib/NCEP/GFS/CONUS_80km/best" +
 					 "?var=" + a +
 					 "&latitude=" + b +
 					 "&longitude=" + c +
-//					 "&time_start=" + d +
-//					 "&time_end=" + e +
+					 "&time_start=" + d +
+					 "&time_end=" + e +
 					 "&vertCoord=&accept=xml");
 		super.setSampleVariable(modelVariables[spinMainVariables.getSelectedItemPosition()]);
 		Intent i = new Intent(this, DisplayActivity.class);

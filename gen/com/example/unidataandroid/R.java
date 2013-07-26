@@ -193,18 +193,16 @@ containing a value of this type.
     }
     public static final class id {
         public static final int LayoutTop=0x7f050009;
-        public static final int action_settings=0x7f050020;
+        public static final int action_settings=0x7f05001e;
         public static final int button_location_current=0x7f050010;
         public static final int button_location_show=0x7f050011;
-        public static final int button_submit=0x7f05001f;
+        public static final int button_new_request=0x7f050006;
+        public static final int button_submit=0x7f05001d;
         public static final int chart=0x7f050005;
         public static final int edittext_lat=0x7f05000d;
         public static final int edittext_lon=0x7f05000f;
-        public static final int edittext_time_end=0x7f05001e;
-        public static final int edittext_time_start=0x7f05001b;
         public static final int fragment_map=0x7f05000b;
         public static final int hybrid=0x7f050004;
-        public static final int new_series=0x7f050006;
         public static final int none=0x7f050000;
         public static final int normal=0x7f050001;
         public static final int parent=0x7f050007;
@@ -212,7 +210,7 @@ containing a value of this type.
         public static final int scrollView1=0x7f050012;
         public static final int spinner_product=0x7f050016;
         public static final int spinner_product_type=0x7f050014;
-        public static final int spinner_time_end=0x7f05001d;
+        public static final int spinner_time_end=0x7f05001c;
         public static final int spinner_time_start=0x7f05001a;
         public static final int spinner_variable=0x7f050018;
         public static final int terrain=0x7f050003;
@@ -221,7 +219,7 @@ containing a value of this type.
         public static final int textview_lon=0x7f05000e;
         public static final int textview_product=0x7f050015;
         public static final int textview_product_type=0x7f050013;
-        public static final int textview_time_end=0x7f05001c;
+        public static final int textview_time_end=0x7f05001b;
         public static final int textview_time_start=0x7f050019;
         public static final int textview_variables=0x7f050017;
         public static final int textview_welcome=0x7f050008;
@@ -303,7 +301,7 @@ containing a value of this type.
         /**  Long form sign-in button text [CHAR LIMIT=30] 
          */
         public static final int common_signin_button_text_long=0x7f06000e;
-        public static final int hello_world=0x7f060024;
+        public static final int hello_world=0x7f060025;
         /**  Location client code resources (prefix with location_client) 
 
         Begin strings for location.reporting
@@ -326,8 +324,9 @@ containing a value of this type.
         public static final int main_time_end=0x7f060020;
         public static final int main_time_start=0x7f06001f;
         public static final int main_variables=0x7f06001b;
-        public static final int title_activity_display=0x7f060023;
-        public static final int title_activity_unidata_super=0x7f060025;
+        public static final int new_request=0x7f060023;
+        public static final int title_activity_display=0x7f060024;
+        public static final int title_activity_unidata_super=0x7f060026;
         public static final int welcome=0x7f060017;
     }
     public static final class style {

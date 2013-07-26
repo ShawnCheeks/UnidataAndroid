@@ -15,6 +15,7 @@
     <string name="main_time_end">Ending Time:</string>
     <string name="location_current">Current Location</string>
     <string name="location_show">Fly to Coords</string>
+    <string name="new_request">New Request</string>
 
     <string-array name="main_product_types">
         <item>Choose a product type</item>
@@ -35,7 +36,7 @@
         <item>Please choose a product first</item>
     </string-array>
     <string-array name="time_start_empty">
-        <item>Please choose a variable first</item>
+        <item>Please choose a product first</item>
     </string-array>
     <string-array name="time_end_empty">
         <item>Please choose a starting time first</item>

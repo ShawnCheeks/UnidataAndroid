@@ -89,25 +89,26 @@ public class UnidataSuperActivity extends FragmentActivity {
 			validTimes[0] = firstTime;
 			
 			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:'00:00Z'");
-//			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy");
 			
 			Calendar startTime = Calendar.getInstance();
 			startTime.set(Integer.parseInt(validTimes[0].substring(0, 4)), 
-						  Integer.parseInt(validTimes[0].substring(5, 7)), 
+						  Integer.parseInt(validTimes[0].substring(5, 7))-1, 
 						  Integer.parseInt(validTimes[0].substring(8, 10)), 
 						  Integer.parseInt(validTimes[0].substring(11, 13)),
 						  Integer.parseInt(validTimes[0].substring(14, 16)),
 					      Integer.parseInt(validTimes[0].substring(17, 19)));
 			
+			System.out.println(Integer.parseInt(validTimes[0].substring(0, 4)));
+			System.out.println(Integer.parseInt(validTimes[0].substring(5, 7)));
+			System.out.println(Integer.parseInt(validTimes[0].substring(8, 10)));
+			System.out.println(Integer.parseInt(validTimes[0].substring(11, 13)));
+			System.out.println(Integer.parseInt(validTimes[0].substring(14, 16)));
+			System.out.println(Integer.parseInt(validTimes[0].substring(17, 19)));
+			System.out.println(dateFormat.format(startTime.getTime()));
+			
 			for(int i=1; i<validTimes.length; i++)
 			{
 				startTime.add(Calendar.HOUR, 6);
-				System.out.println(startTime.get(Calendar.YEAR) + "\n" +
-								   startTime.get(Calendar.MONTH) + "\n" +
-								   startTime.get(Calendar.DAY_OF_MONTH) + "\n" +
-								   startTime.get(Calendar.HOUR_OF_DAY) + "\n" +
-								   startTime.get(Calendar.MINUTE) + "\n" +
-								   startTime.get(Calendar.SECOND));
 				validTimes[i] = dateFormat.format(startTime.getTime());
 				System.out.println(validTimes[i]);
 			}

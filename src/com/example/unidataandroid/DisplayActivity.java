@@ -264,18 +264,6 @@ public class DisplayActivity extends UnidataSuperActivity {
 		         FileUtils.copyURLToFile(textUrl, testFile2);
 		         textResult = FileUtils.readFileToString(testFile2);
 		         
-//		         BufferedReader bufferReader 
-//		          = new BufferedReader(new InputStreamReader(textUrl.openStream()));
-//		         
-//		         String StringBuffer;
-//		         String stringText = "";
-//		         while ((StringBuffer = bufferReader.readLine()) != null) {
-//		          stringText += StringBuffer;   
-//		         }
-//		         bufferReader.close();
-//
-//		         textResult = stringText;
-		         
 		        } catch (MalformedURLException e) {
 		         e.printStackTrace();
 		         textResult = e.toString();   
@@ -296,5 +284,10 @@ public class DisplayActivity extends UnidataSuperActivity {
 		    	
 		     super.onPostExecute(result);   
 		    }
+		}
+		
+		public void closeDisplayActivity(View view)
+		{
+			finish();
 		}
 }

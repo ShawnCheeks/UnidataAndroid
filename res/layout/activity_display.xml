@@ -24,10 +24,12 @@
         </LinearLayout>
 
         <Button
-            android:id="@+id/new_series"
+            android:id="@+id/button_new_request"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="New Series" />
+            android:onClick="closeDisplayActivity"
+            android:text="@string/new_request" />
+
     </LinearLayout>
 
 </RelativeLayout>
