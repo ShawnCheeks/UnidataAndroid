@@ -1,5 +1,11 @@
 package com.example.unidataandroid;
 
+/*
+ * This class stores the individual variables that is parsed in from the XML of the GFS Model
+ * It stores the name of the variable (the one with underscores), the description (the long name),
+ * and the units used by the model
+ */
+
 public class Variable {
 	private String name, description, units;
 	

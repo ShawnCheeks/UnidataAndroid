@@ -1,62 +1,42 @@
+/** UnidataSuperActivity stores the variables that need to be exchanged between activities and threads
+ * AChartEngine info: http://achartengine.org/ 
+ * XMLPullParser info: http://developer.android.com/reference/org/xmlpull/v1/XmlPullParser.html
+ */
+
 package com.example.unidataandroid;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.StringReader;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.ArrayList;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.achartengine.ChartFactory;
 import org.achartengine.GraphicalView;
 import org.achartengine.chart.PointStyle;
-import org.achartengine.model.SeriesSelection;
 import org.achartengine.model.XYMultipleSeriesDataset;
 import org.achartengine.model.XYSeries;
-import org.achartengine.renderer.DefaultRenderer;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
 import org.achartengine.renderer.XYSeriesRenderer;
 import org.apache.commons.io.FileUtils;
 import org.xmlpull.v1.XmlPullParserException;
 
-import com.example.unidataandroid.XMLParser.Entry;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
-import android.app.Activity;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.format.DateFormat;
-import android.util.Log;
-import android.util.Xml;
-import android.util.Log;
-import android.util.Xml;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.Toast;
 
 public class DisplayActivity extends UnidataSuperActivity {
 
-	/** The main dataset that includes all the series that go into a chart. */
+	  /** The main dataset for the chart, can hold multiple series */
 	  private XYMultipleSeriesDataset mDataset = new XYMultipleSeriesDataset();
 	  /** The main renderer that includes all the renderers customizing a chart. */
 	  private XYMultipleSeriesRenderer mRenderer = new XYMultipleSeriesRenderer();
@@ -64,11 +44,10 @@ public class DisplayActivity extends UnidataSuperActivity {
 	  private XYSeries mCurrentSeries;
 	  /** The most recently created renderer, customizing the current series. */
 	  private XYSeriesRenderer mCurrentRenderer;
-	  /** Button for creating a new series of data. */
-	  private Button mNewSeries;
 	  /** The chart view that displays the data. */
 	  private GraphicalView mChartView;
 
+	  /* Android onSaveInstanceState method, code from AChartEngine example */
 	  @Override
 	  protected void onSaveInstanceState(Bundle outState) {
 	    super.onSaveInstanceState(outState);
@@ -79,17 +58,18 @@ public class DisplayActivity extends UnidataSuperActivity {
 	    outState.putSerializable("current_renderer", mCurrentRenderer);
 	  }
 
+	  /* Android onRestoreInstanceState method, code from AChartEngine example */
 	  @Override
 	  protected void onRestoreInstanceState(Bundle savedState) {
 	    super.onRestoreInstanceState(savedState);
-	    // restore the current data, for instance when changing the screen
-	    // orientation
+	    // restore the current data, for instance when changing the screen orientation
 	    mDataset = (XYMultipleSeriesDataset) savedState.getSerializable("dataset");
 	    mRenderer = (XYMultipleSeriesRenderer) savedState.getSerializable("renderer");
 	    mCurrentSeries = (XYSeries) savedState.getSerializable("current_series");
 	    mCurrentRenderer = (XYSeriesRenderer) savedState.getSerializable("current_renderer");
 	  }
 
+	  /* The Android version of the "main" method */
 	  @Override
 	  protected void onCreate(Bundle savedInstanceState) {
 	    super.onCreate(savedInstanceState);
@@ -97,35 +77,61 @@ public class DisplayActivity extends UnidataSuperActivity {
 	    
 	    String xml;
 	    
+	    /* times will store the time strings.  ex: 2013-08-01T00:00:00Z
+	     * hours will store the converted "time since" the first entry
+	     * values will store the model data itself that we're interested in
+	     */
 	    ArrayList<String> times = new ArrayList<String>();
 		ArrayList<Integer> hours = new ArrayList<Integer>();
 		ArrayList<Double> values = new ArrayList<Double>();
 		String units = "";
 		
-//		UnidataSuperActivity.setURL("http://thredds.ucar.edu/thredds/ncss/grid/grib/NCEP/GFS/CONUS_80km/best?var=Temperature_height_above_ground&latitude=40&longitude=-105&time_start=2013-07-08T00%3A00%3A00Z&time_end=2013-07-10T00%3A00%3A00Z&vertCoord=&accept=xml");
+		/* MyTask is the new thread that accesses the network
+		 * In Android, network access must be done on a separate thread
+		 * There is a way to override that requirement, but it is really, really, really frowned upon
+		 */
 		new MyTask().execute();
 		
+		/* sets the "done" variable to false so that the dummy loop will wait 
+		 * until the MyTask thread sets the variable to true
+		 * without this dummy while loop, the rest of this thread will continue on
+		 * concurrently with the other thread, but it needs the info from that thread
+		 * before it can do what it's supposed to do
+		 * This probably isn't the best solution, but it worked, so I was happy with it
+		 */
 		super.setDone(false);
 		while(!super.getDone()){}
 		
+		/* gets the XML string from the super class (that was put there by the MyTask thread */
 		xml = super.getXML();
+		
+		/* now for the XMLPullParsing, which uses the string of XML you just got from the super class 
+		 * A lot of this came from the example at http://developer.android.com/reference/org/xmlpull/v1/XmlPullParser.html
+		 * just changing what I'm looking for 
+		 */
 	    try
 	    {
 	    	XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
 	    	factory.setNamespaceAware(false);
 	        XmlPullParser xpp = factory.newPullParser();
-
-	        System.out.println(super.getSampleVariable().getName());
 	        
 	        xpp.setInput(new StringReader (xml));
 	        int eventType = xpp.getEventType();
+	        
+	        /* while loop that parses through the XML document */
 	        while (eventType != XmlPullParser.END_DOCUMENT) {
 	            if(eventType == XmlPullParser.START_TAG) {
+	            	/* the AttributeValue are where the NCSS stores what the value itself is 
+	            	 * the null check has to be there, otherwise it will throw a NullPointerException if the attribute
+	            	 * does not exist in that particular tag
+	            	 */
 	            	if(xpp.getAttributeValue(null, "name") != null && xpp.getAttributeValue(null, "name").equals("date")){
+	            		/* moves the parser to the value of the date attribute and adds it to the times arraylist */
 	            		eventType = xpp.nextToken();
 	            		xpp.getText();
 	            		times.add(xpp.getText());
 	            	} else if(xpp.getAttributeValue(null, "units")!=null && xpp.getAttributeValue(null, "name").equals(super.getSampleVariable().getName())){
+	            		/* moves the parser to the value of the variable you want, based on the units associated with that variable */
 	            		if(units.equals(""))
 	            			units = super.getSampleVariable().getUnits();
 	            		eventType = xpp.nextToken();
@@ -136,6 +142,7 @@ public class DisplayActivity extends UnidataSuperActivity {
 	            eventType = xpp.nextToken();
 	       }
 	        
+	        /* calls the formatTimes method, which.. well.. formats the arrayList of times */
 	        hours = formatTimes(times);
 
 	    }catch(XmlPullParserException e){
@@ -144,6 +151,12 @@ public class DisplayActivity extends UnidataSuperActivity {
 	    	e.printStackTrace();
 	    }
 
+	    /** this is where we get into the charting section
+	     * this part is mostly copied from examples from AChartEngine,
+	     * just with some tweaks to get the appearance how I like
+	     * for better info than I could ever give you, see the AChartEngine JavaDoc:
+	     * http://achartengine.org/content/javadoc/index.html
+	     */
 	    // set some properties on the main renderer
 	    mRenderer.setApplyBackgroundColor(true);
 	    mRenderer.setBackgroundColor(Color.argb(255, 0, 0, 0));
@@ -181,15 +194,20 @@ public class DisplayActivity extends UnidataSuperActivity {
         renderer.setColor(Color.argb(255, 255, 255, 0));
         mCurrentRenderer = renderer;
         
+        /* converts the arrayLists I've been using so far to regular arrays that can be used by AChartEngine*/
         Integer[] xs = hours.toArray(new Integer[hours.size()]);
         Double[] ys = values.toArray(new Double[values.size()]);
         
+        /* adds the coordinate points to the series in AChartEngine */
         for(int i=0; i < xs.length; i++)
         {
         	mCurrentSeries.add(xs[i].intValue(), ys[i].doubleValue());
         }
 	  }
 
+	 /* Android method to reset everything if the app is minimized and then resumed
+	  * Code from an AChartEngine example
+	  */
 	  @Override
 	  protected void onResume() {
 	    super.onResume();
@@ -206,9 +224,14 @@ public class DisplayActivity extends UnidataSuperActivity {
 	    }
 	  }
 	  
+	  /* formatTimes method that will convert the time strings (ex: 2013-08-01T00:00:00Z)
+	   * to Calendar objects, and then return an ArrayList of integers of time
+	   * since the first time (0 hour being the first entry, then times since 0 hour) */
 	  public ArrayList<Integer> formatTimes(ArrayList<String> times)
 		{
+		  	/* creating the calendar object */
 			Calendar startTime = Calendar.getInstance();
+			/* setting the start time calendar object based on the first string */
 			startTime.set(Integer.parseInt(times.get(0).substring(0, 4)), 
 						  Integer.parseInt(times.get(0).substring(5, 7)), 
 						  Integer.parseInt(times.get(0).substring(8, 10)), 
@@ -216,9 +239,13 @@ public class DisplayActivity extends UnidataSuperActivity {
 						  Integer.parseInt(times.get(0).substring(14, 16)),
 					      Integer.parseInt(times.get(0).substring(17, 19)));
 			
+			/* the arraylist that will be returned by this method */
 			ArrayList<Integer> timePassed = new ArrayList<Integer>();
 			timePassed.add(0);
 			
+			/* now, convert each other time string to a calendar object and then calculate the time difference
+			 * between this one and 0 hour
+			 */
 			for (int i=1; i<times.size(); i++)
 			{
 				Calendar thisTime = Calendar.getInstance();
@@ -234,10 +261,10 @@ public class DisplayActivity extends UnidataSuperActivity {
 				timePassed.add(differenceHours);
 			}
 			
-			return timePassed;
-			
+			return timePassed;			
 		}
 
+	  /* Android onCreateOptionsMenu - default code */
 		@Override
 		public boolean onCreateOptionsMenu(Menu menu) {
 			// Inflate the menu; this adds items to the action bar if it is present.
@@ -245,17 +272,24 @@ public class DisplayActivity extends UnidataSuperActivity {
 			return true;
 		}
 
+		/* the MyTask thread that accesses the network to get the XML */
 		private class MyTask extends AsyncTask<Void, Void, Void>{
 			
-			String textResult;
-			
+			/* textResult will end up storing the XML */
+			String textResult;			
 		    
 		    @Override
 		    protected Void doInBackground(Void... params) {
+		    	/* SuperActivity's done variable tells the other thread when this one has finished */
 		    	UnidataSuperActivity.setDone(false);
 		    	
+		    	/* Gets the URL address of the data wanted
+		    	 * URL comes from the Super, which is set by the MainActivity
+		    	 */
 		        URL textUrl;
 		        String address = UnidataSuperActivity.getURL();
+		        
+		        /* Converts the URL into a temporary XML file, which then is converted into a String */
 		        try {
 		         textUrl = new URL(address);
 		         System.out.println(textUrl);
@@ -272,6 +306,9 @@ public class DisplayActivity extends UnidataSuperActivity {
 		         textResult = e.toString();   
 		        }
 		        
+		        /* sets the XML String in the super class so it can be parsed in the main thread
+		         * and then lets the main thread know it has finished
+		         */
 		        UnidataSuperActivity.setXML(textResult);
 		        UnidataSuperActivity.setDone(true);
 
@@ -279,6 +316,7 @@ public class DisplayActivity extends UnidataSuperActivity {
 		     
 		    }
 		    
+		    /* required method.. doesn't do anything in this instance that I know of */
 		    @Override
 		    protected void onPostExecute(Void result) {
 		    	
@@ -286,6 +324,10 @@ public class DisplayActivity extends UnidataSuperActivity {
 		    }
 		}
 		
+		/* method called by the onClick (see XML file activity_display.xml) feature of the return button
+		 * all it does is close this activity, which will take the user back to the MainActivity
+		 * which will let them submit a new report
+		 */
 		public void closeDisplayActivity(View view)
 		{
 			finish();

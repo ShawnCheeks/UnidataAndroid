@@ -1,3 +1,9 @@
+/* This super activity holds all of the variables that need to be exchanged between activities and threads
+ * While it may not be the best way to handle variables between threads, I believe it is fairly standard
+ * to have a superclass of this sort that will store variables that need to be used between activities.
+ * Since I needed to have it anyway, I decided to use it for the threads as well
+ */
+
 package com.example.unidataandroid;
 
 import java.text.SimpleDateFormat;
@@ -84,12 +90,17 @@ public class UnidataSuperActivity extends FragmentActivity {
 			return validTimes;
 		}
 		
+		/*
+		 * Sets the valid time choices for the user
+		 */
 		public static void setValidTimes(String firstTime)
 		{
+			//the first time comes from the XML parsing
 			validTimes[0] = firstTime;
 			
 			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:'00:00Z'");
 			
+			//creates a calendar object based on the first time
 			Calendar startTime = Calendar.getInstance();
 			startTime.set(Integer.parseInt(validTimes[0].substring(0, 4)), 
 						  Integer.parseInt(validTimes[0].substring(5, 7))-1, 
@@ -98,19 +109,11 @@ public class UnidataSuperActivity extends FragmentActivity {
 						  Integer.parseInt(validTimes[0].substring(14, 16)),
 					      Integer.parseInt(validTimes[0].substring(17, 19)));
 			
-			System.out.println(Integer.parseInt(validTimes[0].substring(0, 4)));
-			System.out.println(Integer.parseInt(validTimes[0].substring(5, 7)));
-			System.out.println(Integer.parseInt(validTimes[0].substring(8, 10)));
-			System.out.println(Integer.parseInt(validTimes[0].substring(11, 13)));
-			System.out.println(Integer.parseInt(validTimes[0].substring(14, 16)));
-			System.out.println(Integer.parseInt(validTimes[0].substring(17, 19)));
-			System.out.println(dateFormat.format(startTime.getTime()));
-			
+			//creates time strings based on incrementing 6 hours and formatting
 			for(int i=1; i<validTimes.length; i++)
 			{
 				startTime.add(Calendar.HOUR, 6);
 				validTimes[i] = dateFormat.format(startTime.getTime());
-				System.out.println(validTimes[i]);
 			}
 		}
 		
