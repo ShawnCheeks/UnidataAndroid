@@ -1,6 +1,13 @@
-/** UnidataSuperActivity stores the variables that need to be exchanged between activities and threads
+/** DisplayActivity handles the parsing of data from the server and then displaying it with AChartEngine
  * AChartEngine info: http://achartengine.org/ 
  * XMLPullParser info: http://developer.android.com/reference/org/xmlpull/v1/XmlPullParser.html
+ * Commons IO info: http://commons.apache.org/
+ */
+
+/**
+ * @author Shawn Cheeks
+ * @version 8/1/2013
+ * @contact cheeks5@marshall.edu
  */
 
 package com.example.unidataandroid;
@@ -289,7 +296,9 @@ public class DisplayActivity extends UnidataSuperActivity {
 		        URL textUrl;
 		        String address = UnidataSuperActivity.getURL();
 		        
-		        /* Converts the URL into a temporary XML file, which then is converted into a String */
+		        /* Converts the URL into a temporary XML file, which then is converted into a String
+		         * Uses the Commons IO library for FileUtils
+		         */
 		        try {
 		         textUrl = new URL(address);
 		         System.out.println(textUrl);

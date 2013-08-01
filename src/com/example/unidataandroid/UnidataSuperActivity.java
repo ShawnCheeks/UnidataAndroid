@@ -1,7 +1,13 @@
-/* This super activity holds all of the variables that need to be exchanged between activities and threads
+/** This super activity holds all of the variables that need to be exchanged between activities and threads
  * While it may not be the best way to handle variables between threads, I believe it is fairly standard
  * to have a superclass of this sort that will store variables that need to be used between activities.
  * Since I needed to have it anyway, I decided to use it for the threads as well
+ */
+
+/**
+ * @author Shawn Cheeks
+ * @version 8/1/2013
+ * @contact cheeks5@marshall.edu
  */
 
 package com.example.unidataandroid;

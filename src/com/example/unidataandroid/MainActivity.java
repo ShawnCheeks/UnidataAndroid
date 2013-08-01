@@ -1,3 +1,15 @@
+/** MainActivity formats the URL containing the desired data
+ * AChartEngine info: http://achartengine.org/ 
+ * XMLPullParser info: http://developer.android.com/reference/org/xmlpull/v1/XmlPullParser.html
+ * Commons IO info: http://commons.apache.org/
+ * Google Maps Android API info: https://developers.google.com/
+ */
+
+/**
+ * @author Shawn Cheeks
+ * @version 8/1/2013
+ * @contact cheeks5@marshall.edu
+ */
 package com.example.unidataandroid;
 
 import java.io.File;
@@ -543,7 +555,9 @@ implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, On
 	        URL textUrl;
 	        String address = UnidataSuperActivity.getModelURL();
 	        
-	        /* Converts the URL into a temporary XML file, which then is converted into a String */
+	        /* Converts the URL into a temporary XML file, which then is converted into a String
+	         * Uses the Commons IO library for FileUtils
+	         */
 	        try {
 	         textUrl = new URL(address);
 	         
